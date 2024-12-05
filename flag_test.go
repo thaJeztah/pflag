@@ -100,6 +100,12 @@ func TestEverything(t *testing.T) {
 	}
 }
 
+func TestNoArgument(t *testing.T) {
+	if GetCommandLine().Parse([]string{}) != nil {
+		t.Error("parse failed for empty argument list")
+	}
+}
+
 func TestUsage(t *testing.T) {
 	called := false
 	ResetForTesting(func() { called = true })
@@ -1134,7 +1140,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1154,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
