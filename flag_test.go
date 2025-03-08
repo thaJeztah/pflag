@@ -433,7 +433,7 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"-u=unknown3Value",
 		"-p",
 		"unknown4Value",
-		"-q", //another unknown with bool value
+		"-q", // another unknown with bool value
 		"-y",
 		"ee",
 		"--unknown7=unknown7value",
@@ -899,7 +899,7 @@ func TestChangingArgs(t *testing.T) {
 
 // Test that -help invokes the usage message and returns ErrHelp.
 func TestHelp(t *testing.T) {
-	var helpCalled = false
+	helpCalled := false
 	fs := NewFlagSet("help test", ContinueOnError)
 	fs.Usage = func() { helpCalled = true }
 	var flag bool
@@ -998,6 +998,7 @@ func getDeprecatedFlagSet() *FlagSet {
 	f.MarkDeprecated("badflag", "use --good-flag instead")
 	return f
 }
+
 func TestDeprecatedFlagInDocs(t *testing.T) {
 	f := getDeprecatedFlagSet()
 
@@ -1236,8 +1237,8 @@ func TestPrintDefaults(t *testing.T) {
 	fs.PrintDefaults()
 	got := buf.String()
 	if got != defaultOutput {
-		fmt.Print("\n" + got + "\n")
-		fmt.Print("\n" + defaultOutput + "\n")
+		fmt.Println("\n" + got)
+		fmt.Printf("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
 }
