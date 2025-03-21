@@ -1183,6 +1183,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --StringSlice strings       string slice with zero default
       --Z int                     an int that defaults to zero
       --custom custom             custom Value implementation
+      --custom-with-val custom    custom value which has been set from command line while help is shown
       --customP custom            a VarP with default (default 10)
       --maxT timeout              set timeout for dial
   -v, --verbose count             verbosity
@@ -1233,6 +1234,14 @@ func TestPrintDefaults(t *testing.T) {
 
 	cv2 := customValue(10)
 	fs.VarP(&cv2, "customP", "", "a VarP with default")
+
+	// Simulate case where a value has been provided and the help screen is shown
+	var cv3 customValue
+	fs.Var(&cv3, "custom-with-val", "custom value which has been set from command line while help is shown")
+	err := fs.Parse([]string{"--custom-with-val", "3"})
+	if err != nil {
+		t.Error("Parsing flags failed:", err)
+	}
 
 	fs.PrintDefaults()
 	got := buf.String()
