@@ -1246,9 +1246,7 @@ func TestPrintDefaults(t *testing.T) {
 	fs.PrintDefaults()
 	got := buf.String()
 	if got != defaultOutput {
-		fmt.Println("\n" + got)
-		fmt.Printf("\n" + defaultOutput)
-		t.Errorf("got %q want %q\n", got, defaultOutput)
+		t.Errorf("\n--- Got:\n%s--- Wanted:\n%s\n", got, defaultOutput)
 	}
 }
 
