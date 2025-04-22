@@ -47,6 +47,19 @@ func (e *NotExistError) Error() string {
 	panic(fmt.Errorf("unknown flagNotExistErrorMessageType: %v", e.messageType))
 }
 
+// GetSpecifiedName returns the name of the flag (without dashes) as it
+// appeared in the parsed arguments.
+func (e *NotExistError) GetSpecifiedName() string {
+	return e.name
+}
+
+// GetSpecifiedShortnames returns the group of shorthand arguments
+// (without dashes) that the flag appeared within. If the flag was not in a
+// shorthand group, this will return an empty string.
+func (e *NotExistError) GetSpecifiedShortnames() string {
+	return e.specifiedShorthands
+}
+
 // ValueRequiredError is the error returned when a flag needs an argument but
 // no argument was provided.
 type ValueRequiredError struct {
@@ -63,6 +76,24 @@ func (e *ValueRequiredError) Error() string {
 	}
 
 	return fmt.Sprintf("flag needs an argument: --%s", e.specifiedName)
+}
+
+// GetFlag returns the flag for which the error occurred.
+func (e *ValueRequiredError) GetFlag() *Flag {
+	return e.flag
+}
+
+// GetSpecifiedName returns the name of the flag (without dashes) as it
+// appeared in the parsed arguments.
+func (e *ValueRequiredError) GetSpecifiedName() string {
+	return e.specifiedName
+}
+
+// GetSpecifiedShortnames returns the group of shorthand arguments
+// (without dashes) that the flag appeared within. If the flag was not in a
+// shorthand group, this will return an empty string.
+func (e *ValueRequiredError) GetSpecifiedShortnames() string {
+	return e.specifiedShorthands
 }
 
 // InvalidValueError is the error returned when an invalid value is used
@@ -85,6 +116,21 @@ func (e *InvalidValueError) Error() string {
 	return fmt.Sprintf("invalid argument %q for %q flag: %v", e.value, flagName, e.cause)
 }
 
+// Unwrap implements errors.Unwrap.
+func (e *InvalidValueError) Unwrap() error {
+	return e.cause
+}
+
+// GetFlag returns the flag for which the error occurred.
+func (e *InvalidValueError) GetFlag() *Flag {
+	return e.flag
+}
+
+// GetValue returns the invalid value that was provided.
+func (e *InvalidValueError) GetValue() string {
+	return e.value
+}
+
 // InvalidSyntaxError is the error returned when a bad flag name is passed on
 // the command line.
 type InvalidSyntaxError struct {
@@ -94,4 +140,10 @@ type InvalidSyntaxError struct {
 // Error implements error.
 func (e *InvalidSyntaxError) Error() string {
 	return fmt.Sprintf("bad flag syntax: %s", e.specifiedFlag)
+}
+
+// GetSpecifiedName returns the exact flag (with dashes) as it
+// appeared in the parsed arguments.
+func (e *InvalidSyntaxError) GetSpecifiedFlag() string {
+	return e.specifiedFlag
 }
