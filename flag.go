@@ -381,7 +381,7 @@ func (f *FlagSet) lookup(name NormalizedName) *Flag {
 func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval string) (interface{}, error)) (interface{}, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
-		err := fmt.Errorf("flag accessed but not defined: %s", name)
+		err := &NotExistError{name: name, messageType: flagNotDefinedMessage}
 		return nil, err
 	}
 
@@ -411,7 +411,7 @@ func (f *FlagSet) ArgsLenAtDash() int {
 func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %q does not exist", name)
+		return &NotExistError{name: name, messageType: flagNotExistMessage}
 	}
 	if usageMessage == "" {
 		return fmt.Errorf("deprecated message for flag %q must be set", name)
@@ -427,7 +427,7 @@ func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 func (f *FlagSet) MarkShorthandDeprecated(name string, usageMessage string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %q does not exist", name)
+		return &NotExistError{name: name, messageType: flagNotExistMessage}
 	}
 	if usageMessage == "" {
 		return fmt.Errorf("deprecated message for flag %q must be set", name)
@@ -441,7 +441,7 @@ func (f *FlagSet) MarkShorthandDeprecated(name string, usageMessage string) erro
 func (f *FlagSet) MarkHidden(name string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %q does not exist", name)
+		return &NotExistError{name: name, messageType: flagNotExistMessage}
 	}
 	flag.Hidden = true
 	return nil
@@ -464,18 +464,16 @@ func (f *FlagSet) Set(name, value string) error {
 	normalName := f.normalizeFlagName(name)
 	flag, ok := f.formal[normalName]
 	if !ok {
-		return fmt.Errorf("no such flag -%v", name)
+		return &NotExistError{name: name, messageType: flagNoSuchFlagMessage}
 	}
 
 	err := flag.Value.Set(value)
 	if err != nil {
-		var flagName string
-		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
-		} else {
-			flagName = fmt.Sprintf("--%s", flag.Name)
+		return &InvalidValueError{
+			flag:  flag,
+			value: value,
+			cause: err,
 		}
-		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
 	}
 
 	if !flag.Changed {
@@ -501,7 +499,7 @@ func (f *FlagSet) SetAnnotation(name, key string, values []string) error {
 	normalName := f.normalizeFlagName(name)
 	flag, ok := f.formal[normalName]
 	if !ok {
-		return fmt.Errorf("no such flag -%v", name)
+		return &NotExistError{name: name, messageType: flagNoSuchFlagMessage}
 	}
 	if flag.Annotations == nil {
 		flag.Annotations = map[string][]string{}
@@ -911,10 +909,9 @@ func VarP(value Value, name, shorthand, usage string) {
 	CommandLine.VarP(value, name, shorthand, usage)
 }
 
-// failf prints to standard error a formatted error and usage message and
+// fail prints an error message and usage message to standard error and
 // returns the error.
-func (f *FlagSet) failf(format string, a ...interface{}) error {
-	err := fmt.Errorf(format, a...)
+func (f *FlagSet) fail(err error) error {
 	if f.errorHandling != ContinueOnError {
 		fmt.Fprintln(f.Output(), err)
 		f.usage()
@@ -960,7 +957,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	a = args
 	name := s[2:]
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
-		err = f.failf("bad flag syntax: %s", s)
+		err = f.fail(&InvalidSyntaxError{specifiedFlag: s})
 		return
 	}
 
@@ -982,7 +979,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 
 			return stripUnknownFlagValue(a), nil
 		default:
-			err = f.failf("unknown flag: --%s", name)
+			err = f.fail(&NotExistError{name: name, messageType: flagUnknownFlagMessage})
 			return
 		}
 	}
@@ -1000,13 +997,16 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		a = a[1:]
 	} else {
 		// '--flag' (arg was required)
-		err = f.failf("flag needs an argument: %s", s)
+		err = f.fail(&ValueRequiredError{
+			flag:          flag,
+			specifiedName: name,
+		})
 		return
 	}
 
 	err = fn(flag, value)
 	if err != nil {
-		f.failf(err.Error())
+		f.fail(err)
 	}
 	return
 }
@@ -1039,7 +1039,11 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			outArgs = stripUnknownFlagValue(outArgs)
 			return
 		default:
-			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
+			err = f.fail(&NotExistError{
+				name:                string(c),
+				specifiedShorthands: shorthands,
+				messageType:         flagUnknownShorthandFlagMessage,
+			})
 			return
 		}
 	}
@@ -1062,7 +1066,11 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		outArgs = args[1:]
 	} else {
 		// '-f' (arg was required)
-		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+		err = f.fail(&ValueRequiredError{
+			flag:                flag,
+			specifiedName:       string(c),
+			specifiedShorthands: shorthands,
+		})
 		return
 	}
 
@@ -1072,7 +1080,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	err = fn(flag, value)
 	if err != nil {
-		f.failf(err.Error())
+		f.fail(err)
 	}
 	return
 }
