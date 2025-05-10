@@ -55,7 +55,7 @@ func (f *FlagSet) GetText(name string, out encoding.TextUnmarshaler) error {
 		return fmt.Errorf("flag accessed but not defined: %s", name)
 	}
 	if flag.Value.Type() != reflect.TypeOf(out).Name() {
-		fmt.Errorf("trying to get %s value of flag of type %s", reflect.TypeOf(out).Name(), flag.Value.Type())
+		return fmt.Errorf("trying to get %s value of flag of type %s", reflect.TypeOf(out).Name(), flag.Value.Type())
 	}
 	return out.UnmarshalText([]byte(flag.Value.String()))
 }
