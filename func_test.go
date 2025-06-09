@@ -112,9 +112,9 @@ func TestFuncCompat(t *testing.T) {
 		flagName := "fnflag"
 		args := []string{"--fnflag", "before", "--fnflag", "err", "--fnflag", "after"}
 
-		// test behavior of standard flag.Fset with an error triggere by the callback:
+		// test behavior of standard flag.Fset with an error triggered by the callback:
 		// (note: as can be seen in 'runCase()', if the callback sees "err" as a value
-		//  for the bool flag, it will return an error)
+		//  for the flag, it will return an error)
 		stdFSet := flag.NewFlagSet("std test", flag.ContinueOnError)
 		stdFSet.SetOutput(io.Discard) // suppress output
 
