@@ -145,3 +145,33 @@ func TestBoolFuncCompat(t *testing.T) {
 		}
 	})
 }
+
+func TestBoolFuncUsage(t *testing.T) {
+	t.Run("regular func flag", func(t *testing.T) {
+		// regular boolfunc flag:
+		// expect to see '--flag1' followed by the usageMessage, and no mention of a default value
+		fset := NewFlagSet("unittest", ContinueOnError)
+		fset.BoolFunc("flag1", "usage message", func(s string) error { return nil })
+		usage := fset.FlagUsagesWrapped(80)
+
+		usage = strings.TrimSpace(usage)
+		expected := "--flag1   usage message"
+		if usage != expected {
+			t.Fatalf("unexpected generated usage message\n  expected: %s\n       got: %s", expected, usage)
+		}
+	})
+
+	t.Run("func flag with placeholder name", func(t *testing.T) {
+		// func flag, with a placeholder name:
+		// if usageMesage contains a placeholder, expect '--flag2 {placeholder}'; still expect no mention of a default value
+		fset := NewFlagSet("unittest", ContinueOnError)
+		fset.BoolFunc("flag2", "usage message with `name` placeholder", func(s string) error { return nil })
+		usage := fset.FlagUsagesWrapped(80)
+
+		usage = strings.TrimSpace(usage)
+		expected := "--flag2 name   usage message with name placeholder"
+		if usage != expected {
+			t.Fatalf("unexpected generated usage message\n  expected: %s\n       got: %s", expected, usage)
+		}
+	})
+}
