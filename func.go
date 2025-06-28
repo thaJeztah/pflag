@@ -27,11 +27,11 @@ func (f *FlagSet) FuncP(name string, shorthand string, usage string, fn func(str
 //
 // The callback function will be called every time "--{name}={value}" (or equivalent) is
 // parsed on the command line, with "{value}" as an argument.
-func Func(name string, fn func(string) error, usage string) {
+func Func(name string, usage string, fn func(string) error) {
 	CommandLine.FuncP(name, "", usage, fn)
 }
 
 // FuncP is like Func, but accepts a shorthand letter that can be used after a single dash.
-func FuncP(name, shorthand string, fn func(string) error, usage string) {
+func FuncP(name, shorthand string, usage string, fn func(string) error) {
 	CommandLine.FuncP(name, shorthand, usage, fn)
 }

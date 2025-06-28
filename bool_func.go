@@ -5,7 +5,7 @@ type boolfuncValue func(string) error
 
 func (f boolfuncValue) Set(s string) error { return f(s) }
 
-func (f boolfuncValue) Type() string { return "func" }
+func (f boolfuncValue) Type() string { return "boolfunc" }
 
 func (f boolfuncValue) String() string { return "" } // same behavior as stdlib 'flag' package
 
@@ -35,6 +35,6 @@ func BoolFunc(name string, usage string, fn func(string) error) {
 }
 
 // BoolFuncP is like BoolFunc, but accepts a shorthand letter that can be used after a single dash.
-func BoolFuncP(name, shorthand string, fn func(string) error, usage string) {
+func BoolFuncP(name, shorthand string, usage string, fn func(string) error) {
 	CommandLine.BoolFuncP(name, shorthand, usage, fn)
 }
