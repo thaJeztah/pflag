@@ -2,7 +2,6 @@ package pflag
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 )
@@ -35,8 +34,6 @@ func TestTime(t *testing.T) {
 		{"Sat, 01 Jan 2022 01:01:01", false, time.Time{}},
 	}
 
-	devnull, _ := os.Open(os.DevNull)
-	os.Stderr = devnull
 	for i := range testCases {
 		var timeVar time.Time
 		formats := []string{time.RFC3339Nano, time.RFC1123Z}
