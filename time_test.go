@@ -17,22 +17,22 @@ func TestTime(t *testing.T) {
 	testCases := []struct {
 		input    string
 		success  bool
-		expected string
+		expected time.Time
 	}{
-		{"2022-01-01T01:01:01+00:00", true, "2022-01-01T01:01:01Z"},
-		{" 2022-01-01T01:01:01+00:00", true, "2022-01-01T01:01:01Z"},
-		{"2022-01-01T01:01:01+00:00 ", true, "2022-01-01T01:01:01Z"},
-		{"2022-01-01T01:01:01+02:00", true, "2022-01-01T01:01:01+02:00"},
-		{"2022-01-01T01:01:01.01+02:00", true, "2022-01-01T01:01:01.01+02:00"},
-		{"Sat, 01 Jan 2022 01:01:01 +0000", true, "2022-01-01T01:01:01Z"},
-		{"Sat, 01 Jan 2022 01:01:01 +0200", true, "2022-01-01T01:01:01+02:00"},
-		{"Sat, 01 Jan 2022 01:01:01 +0000", true, "2022-01-01T01:01:01Z"},
-		{"", false, ""},
-		{"not a date", false, ""},
-		{"2022-01-01 01:01:01", false, ""},
-		{"2022-01-01T01:01:01", false, ""},
-		{"01 Jan 2022 01:01:01 +0000", false, ""},
-		{"Sat, 01 Jan 2022 01:01:01", false, ""},
+		{"2022-01-01T01:01:01+00:00", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.UTC)},
+		{" 2022-01-01T01:01:01+00:00", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.UTC)},
+		{"2022-01-01T01:01:01+00:00 ", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.UTC)},
+		{"2022-01-01T01:01:01+02:00", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.FixedZone("UTC+2", 2*60*60))},
+		{"2022-01-01T01:01:01.01+02:00", true, time.Date(2022, 1, 1, 1, 1, 1, 10000000, time.FixedZone("UTC+2", 2*60*60))},
+		{"Sat, 01 Jan 2022 01:01:01 +0000", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.UTC)},
+		{"Sat, 01 Jan 2022 01:01:01 +0200", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.FixedZone("UTC+2", 2*60*60))},
+		{"Sat, 01 Jan 2022 01:01:01 +0000", true, time.Date(2022, 1, 1, 1, 1, 1, 0, time.UTC)},
+		{"", false, time.Time{}},
+		{"not a date", false, time.Time{}},
+		{"2022-01-01 01:01:01", false, time.Time{}},
+		{"2022-01-01T01:01:01", false, time.Time{}},
+		{"01 Jan 2022 01:01:01 +0000", false, time.Time{}},
+		{"Sat, 01 Jan 2022 01:01:01", false, time.Time{}},
 	}
 
 	devnull, _ := os.Open(os.DevNull)
@@ -57,8 +57,8 @@ func TestTime(t *testing.T) {
 			if err != nil {
 				t.Errorf("Got error trying to fetch the Time flag: %v", err)
 			}
-			if timeResult.Format(time.RFC3339Nano) != tc.expected {
-				t.Errorf("expected %q, got %q", tc.expected, timeVar.Format(time.RFC3339Nano))
+			if !timeResult.Equal(tc.expected) {
+				t.Errorf("expected %q, got %q", tc.expected.Format(time.RFC3339Nano), timeVar.Format(time.RFC3339Nano))
 			}
 		}
 	}
