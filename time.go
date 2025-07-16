@@ -7,21 +7,21 @@ import (
 )
 
 // TimeValue adapts time.Time for use as a flag.
-type TimeValue struct {
+type timeValue struct {
 	*time.Time
 	formats []string
 }
 
-func newTimeValue(val time.Time, p *time.Time, formats []string) *TimeValue {
+func newTimeValue(val time.Time, p *time.Time, formats []string) *timeValue {
 	*p = val
-	return &TimeValue{
+	return &timeValue{
 		Time:    p,
 		formats: formats,
 	}
 }
 
 // Set time.Time value from string based on accepted formats.
-func (d *TimeValue) Set(s string) error {
+func (d *timeValue) Set(s string) error {
 	s = strings.TrimSpace(s)
 	for _, f := range d.formats {
 		v, err := time.Parse(f, s)
@@ -44,11 +44,11 @@ func (d *TimeValue) Set(s string) error {
 }
 
 // Type name for time.Time flags.
-func (d *TimeValue) Type() string {
+func (d *timeValue) Type() string {
 	return "time"
 }
 
-func (d *TimeValue) String() string { return d.Time.Format(time.RFC3339Nano) }
+func (d *timeValue) String() string { return d.Time.Format(time.RFC3339Nano) }
 
 // GetTime return the time value of a flag with the given name
 func (f *FlagSet) GetTime(name string) (time.Time, error) {
@@ -63,7 +63,7 @@ func (f *FlagSet) GetTime(name string) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	val, ok := flag.Value.(*TimeValue)
+	val, ok := flag.Value.(*timeValue)
 	if !ok {
 		return time.Time{}, fmt.Errorf("value %s is not a time", flag.Value)
 	}
