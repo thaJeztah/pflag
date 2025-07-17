@@ -928,7 +928,6 @@ func VarP(value Value, name, shorthand, usage string) {
 // returns the error.
 func (f *FlagSet) fail(err error) error {
 	if f.errorHandling != ContinueOnError {
-		fmt.Fprintln(f.Output(), err)
 		f.usage()
 	}
 	return err
@@ -1174,7 +1173,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		case ContinueOnError:
 			return err
 		case ExitOnError:
-			fmt.Println(err)
+			fmt.Fprintln(f.Output(), err)
 			os.Exit(2)
 		case PanicOnError:
 			panic(err)
@@ -1200,6 +1199,7 @@ func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string)
 		case ContinueOnError:
 			return err
 		case ExitOnError:
+			fmt.Fprintln(f.Output(), err)
 			os.Exit(2)
 		case PanicOnError:
 			panic(err)
