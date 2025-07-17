@@ -1176,6 +1176,7 @@ func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string)
 		case ContinueOnError:
 			return err
 		case ExitOnError:
+			fmt.Fprintln(f.Output(), err)
 			os.Exit(2)
 		case PanicOnError:
 			panic(err)
