@@ -698,7 +698,6 @@ func wrap(i, w int, s string) string {
 	}
 
 	return r
-
 }
 
 // FlagUsagesWrapped returns a string containing the usage information
@@ -960,17 +959,17 @@ func (f *FlagSet) usage() {
 // --unknown arg ... (args will be arg ...)
 func stripUnknownFlagValue(args []string) []string {
 	if len(args) == 0 {
-		//--unknown
+		// --unknown
 		return args
 	}
 
 	first := args[0]
 	if len(first) > 0 && first[0] == '-' {
-		//--unknown --next-flag ...
+		// --unknown --next-flag ...
 		return args
 	}
 
-	//--unknown arg ... (args will be arg ...)
+	// --unknown arg ... (args will be arg ...)
 	if len(args) > 1 {
 		return args[1:]
 	}
