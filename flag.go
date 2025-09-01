@@ -1185,7 +1185,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		case ContinueOnError:
 			return err
 		case ExitOnError:
-			if errors.Is(err, ErrHelp) {
+			if err == ErrHelp {
 				os.Exit(0)
 			}
 			fmt.Fprintln(f.Output(), err)
@@ -1214,7 +1214,7 @@ func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string)
 		case ContinueOnError:
 			return err
 		case ExitOnError:
-			if errors.Is(err, ErrHelp) {
+			if err == ErrHelp {
 				os.Exit(0)
 			}
 			fmt.Fprintln(f.Output(), err)
